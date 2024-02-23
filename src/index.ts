@@ -26,23 +26,8 @@ function extract(file: string, identifiers: string[]): void {
 
   // Loop through the root AST nodes of the file
   ts.forEachChild(sourceFile, node => {
-    let name = '';
-
-    // This is an incomplete set of AST nodes which could have a top level identifier
-    // it's left to you to expand this list, which you can do by using
-    // https://ts-ast-viewer.com/ to see the AST of a file then use the same patterns
-    // as below
-    if (ts.isFunctionDeclaration(node)) {
-      name = node.name.text;
-      // Hide the method body when printing
-      node.body = undefined;
-    } else if (ts.isVariableStatement(node)) {
-      name = node.declarationList.declarations[0].name.getText(sourceFile);
-    } else if (
-      ts.isInterfaceDeclaration(node) ||
-      ts.isTypeAliasDeclaration(node)
-    ) {
-      name = node.name.text;
+    if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+      const name = node.name.text;
 
       // Does not match identifier filter
       if (identifiers.length > 0 && !identifiers.includes(name)) {
@@ -62,35 +47,8 @@ function extract(file: string, identifiers: string[]): void {
         );
         console.log(`\n/** ${propComment} */\n${propName}: ${propType}`);
       });
-      // ts.forEachChild(node, child => {
-      //   console.log('child:', child);
-      // });
     }
-
-    // const container = identifiers.includes(name) ? foundNodes : unfoundNodes;
-    // container.push([name, node]);
   });
-
-  // Either print the found nodes, or offer a list of what identifiers were found
-  // if (!foundNodes.length) {
-  //   console.log(
-  //     `Could not find any of ${identifiers.join(
-  //       ', '
-  //     )} in ${file}, found: ${unfoundNodes
-  //       .filter(f => f[0])
-  //       .map(f => f[0])
-  //       .join(', ')}.`
-  //   );
-  //   process.exitCode = 1;
-  // } else {
-  //   foundNodes.map(f => {
-  //     const [name, node] = f;
-  //     console.log('### ' + name + '\n');
-  //     console.log(
-  //       printer.printNode(ts.EmitHint.Unspecified, node, sourceFile)
-  //     ) + '\n';
-  //   });
-  // }
 }
 
 // Run the extract function with the script's arguments
