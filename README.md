@@ -4,9 +4,10 @@ Print property information from top level type / interfaces in a target `.ts` fi
 
 ## Usage
 
-Build the script
+Install dependencies and build the script
 
 ```sh
+npm i
 npm run build
 ```
 
