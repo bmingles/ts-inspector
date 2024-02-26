@@ -19,3 +19,5 @@ npm start \
  node_modules/@react-types/select/src/index.d.ts \
  SpectrumPickerProps
 ```
+
+For now, this just dumps the output to stdout, but you can always pipe it to a file.
