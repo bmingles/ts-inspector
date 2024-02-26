@@ -1,6 +1,6 @@
 # Ts Inspector
 
-Inpsect TypeScript types using compiler api
+Print property information from top level type / interfaces in a target `.ts` file.
 
 ## Usage
 
