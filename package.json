@@ -9,7 +9,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc --m commonjs --outDir dist src/index.ts",
-    "start": "node . node_modules/@react-types/select/src/index.d.ts SpectrumPickerProps"
+    "start": "node ."
   },
   "devDependencies": {
     "@adobe/react-spectrum": "^3.34.1",
