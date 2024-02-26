@@ -20,7 +20,30 @@ npm start \
  ChildType
 ```
 
-This should output:
+This will parse the content in `test/test.ts`
+
+```typescript
+interface Parent {
+  /** Name prop */
+  name: string;
+
+  /**
+   * Multiline comment for
+   * some prop.
+   */
+  age: number;
+}
+
+interface ChildInterface extends Parent {
+  label: string;
+}
+
+type ChildType = Parent & {
+  someOther: string;
+};
+```
+
+and will output:
 
 ```text
 ChildInterface
@@ -53,6 +76,8 @@ age: number
 
 someOther: string
 ```
+
+Note that it included the `Parent` interface props in each of the child types.
 
 Here's an example targetting the `SpectrumPickerProps` interface from `@react-types/select`.
 
