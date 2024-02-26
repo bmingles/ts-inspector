@@ -1,13 +1,18 @@
 interface Parent {
   /** Name prop */
   name: string;
+
+  /**
+   * Multiline comment for
+   * some prop.
+   */
   age: number;
 }
 
-interface Child extends Parent {
+interface ChildInterface extends Parent {
   label: string;
 }
 
-type Child2 = Parent & {
+type ChildType = Parent & {
   someOther: string;
 };

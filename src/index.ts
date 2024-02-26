@@ -36,34 +36,45 @@ function extract(file: string, identifiers: string[]): void {
 
   // Loop through the root AST nodes of the file
   ts.forEachChild(sourceFile, node => {
-    if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
-      const name = node.name.text;
-
-      // Does not match identifier filter
-      if (identifiers.length > 0 && !identifiers.includes(name)) {
-        return;
-      }
-
-      console.log(`\n${name}`);
-
-      const type = typeChecker.getTypeAtLocation(node);
-
-      // TODO: Group results by categories like in the Spectrum docs:
-      // https://github.com/adobe/react-spectrum/blob/fa3862eab668b43459dd99f7fd4bf74e6eda492b/packages/dev/docs/src/PropTable.js#L18
-      typeChecker.getPropertiesOfType(type).forEach(prop => {
-        const propName = prop.escapedName;
-
-        const propComment = prop
-          .getDocumentationComment(typeChecker)
-          .map(c => c.text)
-          .join('\n');
-
-        const propType = typeChecker.typeToString(
-          typeChecker.getTypeOfSymbol(prop)
-        );
-
-        console.log(`\n/** ${propComment} */\n${propName}: ${propType}`);
-      });
+    // We only care about top-level `interface` or `type` nodes
+    if (!ts.isInterfaceDeclaration(node) && !ts.isTypeAliasDeclaration(node)) {
+      return;
     }
+
+    const name = node.name.text;
+
+    // Does not match identifier filter
+    if (identifiers.length > 0 && !identifiers.includes(name)) {
+      return;
+    }
+
+    console.log(`\n${name}`);
+
+    const type = typeChecker.getTypeAtLocation(node);
+
+    typeChecker.getPropertiesOfType(type).forEach(prop => {
+      const propName = prop.escapedName;
+
+      const propComment = prop
+        .getDocumentationComment(typeChecker)
+        // Not actually sure when this contains multiple items since newlines
+        // can exist within a single item's text. Handling it based on the type
+        // definition `ts.SymbolDisplayPart[]` to cover all bases until I learn
+        // otherwise.
+        .map(c => c.text.split('\n'))
+        .flat();
+
+      const propType = typeChecker.typeToString(
+        typeChecker.getTypeOfSymbol(prop)
+      );
+
+      // Format comment block if comment content was found.
+      const commentBlock =
+        propComment.length > 0
+          ? `/**\n * ${propComment.join('\n * ')}\n */\n`
+          : '';
+
+      console.log(`\n${commentBlock}${propName}: ${propType}`);
+    });
   });
 }
