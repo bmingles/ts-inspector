@@ -23,7 +23,11 @@ extract(targetFile, identifiers);
  * @param file a path to a file
  * @param identifiers top level identifiers available
  */
-function extract(file: string, identifiers: string[]): void {
+function extract(
+  file: string,
+  identifiers: string[],
+  { showComments = true, sortByName = false } = {}
+): void {
   // Create a Program to represent the project, then pull out the
   // source file to parse its AST.
   let program = ts.createProgram([file], { allowJs: true });
@@ -48,33 +52,42 @@ function extract(file: string, identifiers: string[]): void {
       return;
     }
 
-    console.log(`\n${name}`);
+    console.log(`\n${name}\n`);
 
     const type = typeChecker.getTypeAtLocation(node);
 
-    typeChecker.getPropertiesOfType(type).forEach(prop => {
-      const propName = prop.escapedName;
+    const sorter: (a: ts.Symbol, b: ts.Symbol) => number = sortByName
+      ? (a, b) => String(a.escapedName).localeCompare(String(b.escapedName))
+      : () => 0;
 
-      const propComment = prop
-        .getDocumentationComment(typeChecker)
-        // Not actually sure when this contains multiple items since newlines
-        // can exist within a single item's text. Handling it based on the type
-        // definition `ts.SymbolDisplayPart[]` to cover all bases until I learn
-        // otherwise.
-        .map(c => c.text.split('\n'))
-        .flat();
+    typeChecker
+      .getPropertiesOfType(type)
+      .sort(sorter)
+      .forEach(prop => {
+        const propName = prop.escapedName;
 
-      const propType = typeChecker.typeToString(
-        typeChecker.getTypeOfSymbol(prop)
-      );
+        const propComment = prop
+          .getDocumentationComment(typeChecker)
+          // Not actually sure when this contains multiple items since newlines
+          // can exist within a single item's text. Handling it based on the type
+          // definition `ts.SymbolDisplayPart[]` to cover all bases until I learn
+          // otherwise.
+          .map(c => c.text.split('\n'))
+          .flat();
 
-      // Format comment block if comment content was found.
-      const commentBlock =
-        propComment.length > 0
-          ? `/**\n * ${propComment.join('\n * ')}\n */\n`
-          : '';
+        const propType = typeChecker.typeToString(
+          typeChecker.getTypeOfSymbol(prop)
+        );
 
-      console.log(`\n${commentBlock}${propName}: ${propType}`);
-    });
+        // Format comment block if comment content was found.
+        const commentBlock =
+          propComment.length > 0
+            ? `\n/**\n * ${propComment.join('\n * ')}\n */\n`
+            : '\n';
+
+        console.log(
+          `${showComments ? commentBlock : ''}${propName}: ${propType}`
+        );
+      });
   });
 }
